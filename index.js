@@ -12,29 +12,51 @@ app.get("/", (req, res) => {
 });
 
 app.post("/check", async (req, res) => {
+
   const { wallet } = req.body;
 
-  // temporary logic
-  const score = Math.floor(Math.random() * 100);
+  try {
 
-  let risk = "Safe";
+    const url =
+      `https://api.helius.xyz/v0/addresses/${wallet}/transactions?api-key=${process.env.HELIUS_API_KEY}`;
 
-  if (score > 70) {
-    risk = "High Risk";
-  } else if (score > 30) {
-    risk = "Suspicious";
+    const response = await fetch(url);
+
+    const txs = await response.json();
+
+    let score = 10;
+    let risk = "Safe";
+
+    if (txs.length > 20) {
+      score = 45;
+      risk = "Suspicious";
+    }
+
+    if (txs.length > 100) {
+      score = 80;
+      risk = "High Risk";
+    }
+
+    res.json({
+      wallet,
+      transactions: txs.length,
+      risk,
+      score,
+      reason: "AI analyzed on-chain wallet activity"
+    });
+
+  } catch (err) {
+
+    res.status(500).json({
+      error: "Failed to analyze wallet"
+    });
+
   }
 
-  res.json({
-    wallet,
-    risk,
-    score,
-    reason: "Initial AI-based wallet analysis"
-  });
 });
 
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+  console.log(`Running on ${PORT}`);
 });
