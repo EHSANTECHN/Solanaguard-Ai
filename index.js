@@ -1,11 +1,15 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
+import OpenAI from "openai";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 app.get("/", (req, res) => {
   res.send("SolGuard AI Backend Running 🚀");
@@ -17,6 +21,7 @@ app.post("/check", async (req, res) => {
 
   try {
 
+    // Fetch Solana wallet transactions
     const url =
       `https://api.helius.xyz/v0/addresses/${wallet}/transactions?api-key=${process.env.HELIUS_API_KEY}`;
 
@@ -37,15 +42,35 @@ app.post("/check", async (req, res) => {
       risk = "High Risk";
     }
 
+    // AI Explanation
+    const ai = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [
+        {
+          role: "user",
+          content:
+            `Analyze this Solana wallet risk.
+            Transactions: ${txs.length}
+            Risk Score: ${score}
+            Risk Level: ${risk}`
+        }
+      ]
+    });
+
+    const explanation =
+      ai.choices[0].message.content;
+
     res.json({
       wallet,
       transactions: txs.length,
       risk,
       score,
-      reason: "AI analyzed on-chain wallet activity"
+      explanation
     });
 
   } catch (err) {
+
+    console.log(err);
 
     res.status(500).json({
       error: "Failed to analyze wallet"
