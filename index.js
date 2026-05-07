@@ -7,7 +7,9 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
+
   res.send("SolGuard AI Backend Running 🚀");
+
 });
 
 app.post("/check", async (req, res) => {
@@ -70,17 +72,18 @@ app.post("/check", async (req, res) => {
 
     }
 
+    // IMPORTANT RESPONSE
     res.json({
 
-      wallet,
+      wallet: wallet,
 
       transactions: txCount,
 
-      risk,
+      risk: risk,
 
-      score,
+      score: score,
 
-      explanation
+      explanation: explanation
 
     });
 
