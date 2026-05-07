@@ -57,16 +57,18 @@ app.post("/check", async (req, res) => {
       ]
     });
 
-    const explanation =
-      ai.choices[0].message.content;
+   const explanation =
+  ai?.choices?.[0]?.message?.content ||
+  "AI analysis unavailable";
 
-    res.json({
-      wallet,
-      transactions: txs.length,
-      risk,
-      score,
-      explanation
-    });
+ res.json({
+  wallet: wallet || "Unknown",
+  transactions: txs?.length || 0,
+  risk: risk || "Unknown",
+  score: score || 0,
+  explanation:
+    explanation || "No AI explanation"
+});
 
   } catch (err) {
 
